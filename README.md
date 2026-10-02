@@ -1,4 +1,5 @@
 # scrcpy-autoconfig
+SOLO DISPONIBLE PARA DISTRIBUCIONES LINUX POR AHORA
 
 Detecta tu celular Android, tu topología USB, tu monitor y tu CPU, y genera
 automáticamente el comando `scrcpy` óptimo para tu setup — todo editable
