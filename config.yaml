@@ -1,0 +1,139 @@
+# Configuracion global de scrcpy-autoconfig.
+# Todo lo que pongas aqui sobreescribe la deteccion automatica.
+# Dejalo vacio (o borra la clave) para que se detecte solo.
+
+# video_codec: h264          # h264 | h265 | av1
+# video_encoder: "nombre.exacto.del.encoder"  # casi nunca necesario: se
+#   autodetecta el mejor encoder de hardware para el codec y el celular
+#   conectado. Fuérzalo solo si quieres un encoder puntual (el nombre es
+#   distinto por chipset -- MediaTek, Qualcomm, Exynos... usa "Detectar"
+#   en la GUI o `--diagnose` para ver el tuyo).
+# bitrate_max: "32M"
+# max_size: 1600
+
+# Modo de entrada para teclado/mouse del PC hacia el celular:
+#   uhid     -> emula un dispositivo HID real a nivel de kernel (default).
+#               Necesario para juegos que bloquean la inyeccion normal
+#               por ADB (ej. anti-cheat de juegos competitivos).
+#   sdk      -> modo por defecto de scrcpy, inyeccion simple via ADB.
+#   aoa      -> emula el protocolo USB real (Android Open Accessory), aun
+#               mas dificil de detectar que uhid; requiere cable de datos.
+#   disabled -> solo streaming de pantalla, sin control (--no-control).
+input_mode: uhid
+
+# Por donde viaja el audio del juego:
+#   off        -> sin audio (default; libera ancho de banda del tunel ADB
+#                 compartido con video/control).
+#   scrcpy     -> audio normal de scrcpy, mismo tunel que video/control
+#                 (ver "audio" abajo por retrocompatibilidad).
+#   bluetooth  -> el celular se empareja directo con el PC por Bluetooth
+#                 (Ajustes de Android > Bluetooth > elegir el PC como
+#                 salida de audio) y manda el audio ahi. Nunca pasa por
+#                 scrcpy: cero impacto en video/input, pero espera unos
+#                 100-150ms de desfasaje audio/video tipico de A2DP salvo
+#                 que el celular y el adaptador BT del PC soporten
+#                 aptX Low Latency o LC3.
+#   wifi_dual  -> video/control siguen por USB (sin audio en ese comando)
+#                 y una SEGUNDA instancia de scrcpy, aparte, trae el audio
+#                 por WiFi -- un canal de radio distinto del cable.
+#                 Requiere Android 11+. En la GUI, elígelo en el combo de
+#                 Audio (prepara el canal WiFi solo, tocando "Detectar"
+#                 primero por USB); la CLI no automatiza el sidecar todavia.
+audio_route: off
+
+# Enviar audio del celular al PC via scrcpy (solo aplica si audio_route
+# es "scrcpy"; se mantiene por retrocompatibilidad con config.yaml viejos).
+audio: false
+
+# Ajustes finos de audio (solo aplican si audio: true). Si el audio te
+# mete lag/microcortes en competitivo, en este orden: probar audio_codec
+# "aac" (suele tener encoder de hardware, opus a veces es software),
+# despues bajar audio_bitrate, despues bajar audio_buffer. La opcion mas
+# segura contra el lag sigue siendo audio: false y escuchar el sonido
+# directo del celular (parlante, cable o Bluetooth al telefono).
+# audio_codec: aac        # opus (default de scrcpy) | aac | flac | raw
+# audio_bitrate: "64K"    # default de scrcpy: 128K
+# audio_buffer: 30         # ms, default de scrcpy: 50 (menos = menos delay,
+#                           # mas riesgo de cortes de audio)
+
+# FPS maximo de transmision (limita la captura en el celular). 0 = sin
+# limite (usa lo que entregue la pantalla del celular).
+max_fps: 0
+
+# Muestra una ventanita flotante ("overlay") siempre encima de la
+# transmision con el FPS real en vivo. Internamente activa --print-fps
+# de scrcpy y la GUI lee esa salida para actualizar el numero.
+fps_overlay: true
+
+# Esquina donde va el overlay de FPS: bottom-left (default) | bottom-right
+# | top-left | top-right.
+fps_overlay_position: bottom-left
+
+# Abre scrcpy directo en pantalla completa, en el monitor detectado como
+# destino (el primario, salvo que fijes "preferred_monitor" abajo).
+# Combinalo con el boton "Usar resolucion de mi monitor" (o max_size)
+# para que no se vea escalado/borroso.
+fullscreen: false
+
+# Flags adicionales de scrcpy que quieras agregar siempre, tal cual:
+extra_flags: []
+
+# Si es true, el programa intenta arreglar automaticamente el power/control
+# de USB y el CPU governor sin preguntar (modo "automatico, no preguntes nada").
+auto_fix_usb_power: false
+auto_fix_cpu_governor: false
+
+# Monitor preferido por nombre (segun lo que reporte `--diagnose`).
+# Si se deja vacio, se usa el monitor primario.
+preferred_monitor: ""
+
+# Serial de celular preferido cuando hay mas de uno conectado.
+preferred_device_serial: ""
+
+# Puerto TCP que usa ADB para la conexion WiFi/LAN (boton "Conectar por
+# WiFi" en la GUI, o `--wifi` en la CLI). El default (5555) sirve casi
+# siempre; cámbialo solo si está ocupado o bloqueado en tu red.
+wifi_port: 5555
+
+# Perfiles: cada uno sobreescribe las claves de arriba al activarlo con
+# --profile <nombre>. Ideal para cambiar rapido entre "quiero minima
+# latencia" y "quiero maxima calidad" sin editar valores sueltos.
+profiles:
+  competitive:
+    # h264 en vez de h265: en general tiene menor latencia de codificacion
+    # en hardware de gama media, aunque pese un poco mas por bit.
+    # NOTA: no se fija "video_encoder" a proposito -- el nombre del encoder
+    # de hardware depende del chipset de CADA celular (MediaTek, Qualcomm,
+    # Exynos...), asi que siempre se detecta automaticamente el mejor
+    # encoder disponible para este codec en el celular conectado.
+    video_codec: h264
+    bitrate_max: "6M"
+    max_size: 1280
+    audio: false
+    input_mode: uhid
+    # Fuerza al encoder a generar un frame clave cada 1s en vez de esperar
+    # al intervalo por defecto (mas largo); reduce el "ghosting" de
+    # movimiento rapido a costa de un poco mas de bitrate.
+    extra_flags: ["--video-codec-options=i-frame-interval=1"]
+  quality:
+    video_codec: h265
+    bitrate_max: "12M"
+    max_size: 1920
+    audio: false
+    input_mode: uhid
+  streaming:
+    # Pensado para hacer directos: buena calidad de imagen para el
+    # espectador, pero sin exigir tanto al celular como el perfil
+    # "quality". h264 en vez de h265 porque h265 pide mas del encoder
+    # de hardware del celular (mas calor/batería) para una ganancia de
+    # nitidez que en un stream comprimido de nuevo no se aprecia tanto.
+    # Bitrate y resolucion intermedios en vez de al maximo, y SIN el
+    # flag de i-frame-interval=1 del perfil competitivo (ese fuerza al
+    # encoder a trabajar mas para bajar el ghosting, que en streaming
+    # no es prioridad frente a no calentar el telefono).
+    video_codec: h264
+    bitrate_max: "10M"
+    max_size: 1600
+    audio: true
+    input_mode: uhid
+    extra_flags: []

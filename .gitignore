@@ -1,0 +1,23 @@
+# Bytecode y cachés de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos virtuales, por si en algún momento usas uno
+.venv/
+venv/
+env/
+
+# Archivos de configuración de editores/IDEs
+.vscode/
+.idea/
+*.swp
+
+# Artefactos de empaquetado
+build/
+dist/
+*.egg-info/
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db

@@ -1,0 +1,6 @@
+pyudev>=0.24
+psutil>=5.9
+screeninfo>=0.8
+pyyaml>=6.0
+rich>=13.0
+PyQt6>=6.6
