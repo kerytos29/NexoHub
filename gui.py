@@ -31,8 +31,8 @@ import sys
 from pathlib import Path
 
 import yaml
-from PyQt6.QtCore import Qt, QThread, QTimer, pyqtSignal
-from PyQt6.QtGui import QColor, QFont
+from PyQt6.QtCore import Qt, QThread, QTimer, QUrl, pyqtSignal
+from PyQt6.QtGui import QColor, QDesktopServices, QFont
 from PyQt6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -72,6 +72,14 @@ CONFIG_PATH = Path(__file__).parent / "config.yaml"
 
 APP_NAME = "NexoHub"
 APP_ICON = "📱"
+
+# "Firma" del autor en la barra superior: una etiqueta chica y clickeable
+# que abre este link. La idea es repetir este mismo elemento (texto,
+# posición, estilo) en los próximos programas para que se reconozcan
+# como hechos por la misma persona. Para otro proyecto, solo hay que
+# cambiar estas dos constantes.
+AUTHOR_HANDLE = "@kerytos29"
+AUTHOR_URL = "https://github.com/kerytos29/NexoHub"
 CUSTOM_PROFILE_KEY = "__custom__"
 
 # --------------------------------------------------------------------------
@@ -169,6 +177,20 @@ QLabel#brandSubtitle {{
     color: {COLORS['subtext']};
     font-size: 11px;
     letter-spacing: 0.2px;
+}}
+QPushButton#authorBadge {{
+    background-color: {COLORS['surface0']};
+    color: {COLORS['subtext']};
+    border: 1px solid {COLORS['surface2']};
+    border-radius: 12px;
+    padding: 6px 14px;
+    font-size: 11px;
+    font-weight: 700;
+}}
+QPushButton#authorBadge:hover {{
+    background-color: {COLORS['accent_soft']};
+    color: {COLORS['accent']};
+    border-color: {COLORS['accent_border']};
 }}
 QPushButton#exitButton {{
     background-color: transparent;
@@ -3077,6 +3099,13 @@ class MainWindow(QMainWindow):
         status_chip_layout.addWidget(self.status_dot)
         status_chip_layout.addWidget(self.status_text)
         layout.addWidget(status_chip)
+
+        author_btn = QPushButton(AUTHOR_HANDLE)
+        author_btn.setObjectName("authorBadge")
+        author_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        author_btn.setToolTip(f"Abrir {AUTHOR_URL} en el navegador")
+        author_btn.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(AUTHOR_URL)))
+        layout.addWidget(author_btn)
 
         exit_btn = QPushButton("⏻")
         exit_btn.setObjectName("exitButton")

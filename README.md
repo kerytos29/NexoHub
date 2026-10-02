@@ -6,20 +6,19 @@ desde `config.yaml` sin tocar código.
 
 ## Estado actual (v1, en desarrollo)
 
-Implementado según el orden de desarrollo recomendado:
-
-1. ✅ `detectors/android_device.py` — modelo, chipset, encoders vía ADB/scrcpy
-2. ✅ `detectors/usb_topology.py` — velocidad negociada real y power/control vía pyudev
-3. ✅ `detectors/monitor.py` — resolución vía screeninfo
-4. ✅ `detectors/cpu.py` — governor vía psutil/cpupower
-5. ✅ `command_builder.py` — reglas fijas (aún no es un motor de reglas genérico)
-6. ✅ `detectors/dependencies.py` — chequeo e instalación automática de dependencias (multi-distro, vía pkexec)
-7. ✅ `gui.py` — pestaña de Dependencias + contraseña gráfica (pkexec en vez de sudo en terminal)
-8. ✅ FPS en vivo: `--max-fps` configurable, `--print-fps` parseado desde `gui.py` (leído por línea vía `stdbuf`), overlay estilo BlueStacks (`gtk-layer-shell`, con respaldo en Qt si no está instalado) y botón "Detener transmisión"
-9. ✅ `detectors/wireless.py` — modo WiFi/LAN (`adb tcpip`): el celular se puede usar sin cable una vez detectado por USB una vez
-10. ✅ `detectors/bluetooth.py` — audio del juego por Bluetooth directo celular→PC (cero impacto en video/control) y audio "dual" por WiFi en paralelo (video/control por USB, audio por una segunda instancia de scrcpy vía WiFi)
-11. ⬜ Motor de reglas genérico + base de chipsets por fabricante
-12. ⬜ Multiplataforma (Windows/macOS), telemetría opt-in, empaquetado AUR/Flatpak
+1. `detectors/android_device.py` — modelo, chipset, encoders vía ADB/scrcpy
+2. `detectors/usb_topology.py` — velocidad negociada real y power/control vía pyudev
+3. `detectors/monitor.py` — resolución vía screeninfo
+4. `detectors/cpu.py` — governor vía psutil/cpupower
+5. `command_builder.py` — reglas fijas (aún no es un motor de reglas genérico)
+6. `detectors/dependencies.py` — chequeo e instalación automática de dependencias (multi-distro, vía pkexec)
+7. `gui.py` — pestaña de Dependencias + contraseña gráfica (pkexec en vez de sudo en terminal)
+8. FPS en vivo: `--max-fps` configurable, `--print-fps` parseado desde `gui.py` (leído por línea vía `stdbuf`), overlay estilo BlueStacks (`gtk-layer-shell`, con respaldo en Qt si no está instalado) y botón "Detener transmisión"
+9. `detectors/wireless.py` — modo WiFi/LAN (`adb tcpip`): el celular se puede usar sin cable una vez detectado por USB una vez
+10. `detectors/bluetooth.py` — audio del juego por Bluetooth directo celular→PC (cero impacto en video/control) y audio "dual" por WiFi en paralelo (video/control por USB, audio por una segunda instancia de scrcpy vía WiFi)
+11. X Motor de reglas genérico + base de chipsets por fabricante
+12. X Multiplataforma (Windows/macOS), telemetría opt-in, empaquetado AUR/Flatpak
+13. X Mapeador de teclado y mouse para no insalatar apps de terceros en el dispositvo movil. 
 
 ## Instalación
 
@@ -42,7 +41,7 @@ arranca uno junto con tu sesión, por ejemplo `hyprpolkitagent` o
 
 ## ¿Funciona con cualquier celular?
 
-Sí: todo lo específico del chipset (nombre del encoder de video) se
+Sí: todo lo específico del chipset Android (nombre del encoder de video) se
 detecta en vivo vía `scrcpy --list-encoders`, nunca se asume un
 fabricante. Los perfiles de `config.yaml` solo fijan el códec deseado
 (h264/h265); el encoder exacto (MediaTek, Qualcomm, Exynos, Unisoc...)
@@ -75,10 +74,10 @@ python main.py --auto --wifi --wifi-port 5566   # puerto TCP custom
 Una vez que el celular fue detectado por USB al menos una vez, se puede
 seguir usando sin cable:
 
-- **GUI**: botón "📶 Conectar por WiFi" al lado de "Detectar", en la
+- **GUI**: botón "Conectar por WiFi" al lado de "Detectar", en la
   tarjeta "Dispositivo".
   Activa `adb tcpip`, conecta por la IP del celular y ya se puede
-  desenchufar el cable. El botón cambia a "🔌 Volver a USB" para cerrar
+  desenchufar el cable. El botón cambia a "Volver a USB" para cerrar
   esa conexión cuando se quiera.
 - **CLI**: flag `--wifi` (ver arriba).
 
@@ -92,7 +91,7 @@ mirar/controlar el celular sin estar atado al cable.
 > `adb devices` — la app la detecta y la limpia sola la próxima vez que
 > se detecte por USB, así que no hace falta hacer nada manual.
 
-## Instalación (para ti o para un tester)
+## Instalación
 
 ```bash
 ./install.sh
@@ -106,16 +105,6 @@ de *sistema* (adb, scrcpy, cpupower, polkit) las instala la propia app
 la primera vez que la abres, desde la pestaña "Dependencias".
 
 Para desinstalar: `./uninstall.sh` (o `./install.sh --uninstall`, es lo mismo).
-
-## Un solo diálogo de contraseña (USB fix + CPU fix)
-
-Antes, activar "Forzar USB power a 'on'" pedía una contraseña gráfica
-**por cada hub** de la cadena USB (el celular + cada hub padre en
-'auto'), y "Forzar CPU 'performance'" pedía otra más aparte — hasta 4
-diálogos seguidos con ambos activados. Ahora `detectors/privileged.py`
-junta todo (todos los `power/control` a tocar + el cambio de governor)
-en un único script y le pide a polkit una sola autenticación para
-correrlo entero.
 
 ## Configuración
 
@@ -212,13 +201,6 @@ opciones:
 Si nada de esto alcanza, revisa el cable/puerto USB: NexoHub avisa en
 el diagnóstico si detecta USB 2.0 (menos margen para audio+video que
 USB 3.x).
-
-## Siguiente paso sugerido
-
-Calcular fps promedio/mínimo/varianza sobre la serie que ya se parsea
-en `gui.py`, y si hay oscilaciones grandes, sugerir causas en este
-orden (ya confirmado en pruebas reales): contención del SoC > cable >
-CPU governor > USB autosuspend.
 
 ## Licencia
 
